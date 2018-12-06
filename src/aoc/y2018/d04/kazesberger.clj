@@ -130,7 +130,8 @@
 
 ;(group-by first (map #(vector (second %1) (nth %1 2)) (get-timetable guard-records)))
 (def days-slept (map #(update % 1 (fn [[:as days]]
-                                    (count (mapcat last days)))) (group-by second (get-timetable guard-records))))
+                                    (count (mapcat last days))))
+                     (group-by second (get-timetable guard-records))))
 (def sleepiest-guard (read-string (get (clojure.set/map-invert days-slept) (apply max (map second days-slept)))))
 
 (def sleepiest-minute
@@ -140,6 +141,23 @@
     (get (clojure.set/map-invert sleepiness-per-minute) (apply max (vals sleepiness-per-minute)))))
 
 (* sleepiest-guard sleepiest-minute)
+
+
+(def guards-w-min-freqs (map #(update % 1 (fn [[:as days]]
+                                            (frequencies (mapcat last days))))
+                             (group-by second (get-timetable guard-records))))
+(map (fn [[guard-id min-freqs]]
+       [guard-id (apply max-key val min-freqs)])
+     (remove (comp empty? second) guards-w-min-freqs))
+
+(* 509 25)
+
+;(apply max-key (fnil val -1) {:a 1 :b 2 :c nil})
+;
+;[guard-id (apply max-key val (second (first guards-w-min-freqs)))]
+;
+(apply max-key val {:a 3 :b 7 :c 9 :d 9})
+
 
 (comment
   (update day 1 (fn [[:as days]] (count (mapcat last days))))
