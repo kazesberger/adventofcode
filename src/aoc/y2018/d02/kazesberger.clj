@@ -3,8 +3,8 @@
 
 (def puzzle-input (str/split (slurp "resources/puzzle-input/y18d02") #"\s+"))
 
-(map (partial group-by identity) puzzle-input)
-(vals (map frequencies puzzle-input))
+;(map (partial group-by identity) puzzle-input)
+;(vals (map frequencies puzzle-input))
 
 (->> puzzle-input
      (map frequencies)

@@ -96,11 +96,51 @@
   (range 1 8)
   (print "a" "b"))
 
-;(defn board-moves [pinput generation]
-;  (let [keyz     (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))
-;                       y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
-;                   [x y])
-;        board-values]))
+(def loc-relations
+  (set (for [loc1 pinput
+             loc2 pinput
+             :when (not= loc1 loc2)]
+         #{loc1 loc2})))
+
+(comment
+  (zipmap pinput (map #(field-move % 1) pinput))
+
+  (def tng {[1 1] #{[1 0] [2 1] [1 2] [0 1]},
+            [1 6] #{[0 6] [1 5] [1 7] [2 6]},
+            [8 3] #{[8 4] [7 3] [9 3] [8 2]},
+            [3 4] #{[3 3] [2 4] [4 4] [3 5]},
+            [5 5] #{[5 4] [6 5] [5 6] [4 5]},
+            [8 9] #{[8 8] [8 10] [9 9] [7 9]}})
+  (def foo '(#{[1 0] [2 1] [1 2] [0 1]}
+              #{[0 6] [1 5] [1 7] [2 6]}
+              #{[8 4] [7 3] [9 3] [8 2]}
+              #{[3 3] [2 4] [4 4] [3 5]}
+              #{[5 4] [6 5] [5 6] [4 5]}))
+  (apply clojure.set/union foo)
+
+  (map (fn [[coord boardvalues]]
+         (let [intersection-candidates (map second (dissoc tng coord))]
+           [coord (apply clojure.set/union intersection-candidates)])) tng))
+           ;[coord intersection-candidates])) tng)
+
+(defn moves [pinput generation]
+  (let [tng (zipmap pinput (map #(field-move % generation) pinput))]))
+
+    ;(for [move tng]
+    ;  (clojure.set/difference (second move) ())))
+
+
+  ; any intersections between any 2 move-sets of same generation are "." coords
+  ; we update the inner (younger / lower generation value) recursion over the outer layers
+
+
+
+
+
+  ;(let [keyz     (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))
+  ;                     y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
+  ;                 [x y])
+  ;      board-values]))
 
 
 
