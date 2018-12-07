@@ -44,11 +44,14 @@
 ; locs could just be a [coord (fn [coord generation])]
 ; free-board           (fn [locs generation])
 
-(defn neighbours [[x y :as coord]]
-  #{[(inc x) y]
-    [(dec x) y]
-    [x (inc y)]
-    [x (dec y)]})
+(def neighbours
+  (memoize
+    (fn neighbours [[x y :as coord]]
+      #{[(inc x) y]
+        [(dec x) y]
+        [x (inc y)]
+        [x (dec y)]})))
+(neighbours [0 0])
   ;(disj (into #{} (for [xn (range (dec x) (+ x 2))
   ;                      yn (range (dec y) (+ y 2))]
   ;                  [xn yn])) coord))
@@ -59,16 +62,18 @@
 ; TODO     but do i need to render a board?) -> i can render board by (- (field [x y] n)
 ; TODO                                                                   (field [x y] (dec n))
 ; TODO    intersections are only possible on same generation
-; TODO    otherwise there is always a "winner" -> the younger one (min generation)
+; TODO    otherwise there is always a "winner" -> the older one (min generation)
 ; TODO    i definitely need to determine (field-size coord generation)
 
 ;locs
-(defn field [[x y :as coord] generation]
-  (if (zero? generation)
-      #{coord}
-      (conj
-        (set (mapcat #(field % (dec generation)) (neighbours coord)))
-        coord)))
+(def field
+   (memoize
+     (fn [[x y :as coord] generation]
+       (if (zero? generation)
+           #{coord}
+           (conj
+             (set (mapcat #(field % (dec generation)) (neighbours coord)))
+             coord)))))
 
 
 (defn field-move [[x y :as coord] generation]
@@ -80,7 +85,7 @@
 
 (comment
   (field [0 0] 2)
-  (field-move [0 0] 2)
+  (time (field-move [0 0] 10))
   (mapcat neighbours (neighbours [0 0])))
 
 (defn board-dimensions [pinput]
@@ -118,10 +123,54 @@
               #{[5 4] [6 5] [5 6] [4 5]}))
   (apply clojure.set/union foo)
 
+
   (map (fn [[coord boardvalues]]
          (let [intersection-candidates (map second (dissoc tng coord))]
            [coord (apply clojure.set/union intersection-candidates)])) tng))
            ;[coord intersection-candidates])) tng)
+
+
+(defn ng-fn [generation]
+    (into {} (map (juxt identity #(field-move % generation)) pinput)))
+
+(defn get-intersections [gen]
+  (apply clojure.set/union
+    (for [pair loc-relations]
+      (clojure.set/intersection (get (ng-fn gen) (first pair)) (get (ng-fn gen) (second pair))))))
+
+(fn [{:as old-board} gen]
+  (into))
+
+(defn gen-board [gen]
+  (let [ng (ng-fn gen)
+        fields-filled (into {} (mapcat #(zipmap (second %1) (repeat (first %1))) ng))
+        fields-with-intersects (into fields-filled (zipmap (get-intersections gen) (repeat "***")))]
+    (if (zero? gen)
+      fields-with-intersects
+      (into fields-with-intersects (gen-board (dec gen))))))
+
+(defn transpose [m]
+  (apply mapv vector m))
+
+(defn render-board [board]
+  (transpose
+    (let [b-dims (board-dimensions pinput)]
+      (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))]
+        (for [y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
+          ;[x y]))))
+          (if (get board [x y]) (get board [x y]) "___"))))))
+(render-board (gen-board 5))
+
+
+
+(comment
+  (gen-board 2)
+  (into {:a 1 :b 2 :c 4} {:a 3 :b 3})
+  (get-intersections 4)
+  (map (get (ng-fn 2) [1 1]))
+  (get-intersections 0)
+  loc-relations
+  (ng-fn 2))
 
 (defn moves [pinput generation]
   (let [tng (zipmap pinput (map #(field-move % generation) pinput))]))
@@ -131,7 +180,7 @@
 
 
   ; any intersections between any 2 move-sets of same generation are "." coords
-  ; we update the inner (younger / lower generation value) recursion over the outer layers
+  ; we update the inner (older / lower generation value) recursion over the outer layers
 
 
 
@@ -144,11 +193,6 @@
 
 
 
-(defn render-board [board]
-  (let [b-dims (board-dimensions board)]
-    (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))]
-       (for [y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
-         (println (get board [x y]))))))
 
 
 
