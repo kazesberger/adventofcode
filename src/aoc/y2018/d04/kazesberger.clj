@@ -135,7 +135,7 @@
 (def sleepiest-guard (read-string (get (clojure.set/map-invert days-slept) (apply max (map second days-slept)))))
 
 (def sleepiest-minute
-  (let [sleep-plan (get (group-by second (get-timetable guard-records)) sleepiest-guard)
+  (let [sleep-plan (get (group-by second (get-timetable guard-records)) (str sleepiest-guard))
         sleepiness-per-minute (frequencies (mapcat last sleep-plan))]
 
     (get (clojure.set/map-invert sleepiness-per-minute) (apply max (vals sleepiness-per-minute)))))

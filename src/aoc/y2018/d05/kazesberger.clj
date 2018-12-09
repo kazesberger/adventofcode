@@ -11,9 +11,9 @@
 
 (react? \a \A)
 
-(defn chain-react
-  ([[:as processed] y] (if (react? (last processed) y) processed (conj processed y)))
-  ([x y] (if (react? x y) [x])))
+;(defn chain-react
+;  ([[:as processed] y] (if (react? (last processed) y) processed (conj processed y)))
+;  ([x y] (if (react? x y) [x])))
 
 (defn chain-react [xs y]
   (if (react? (first xs) y) (rest xs) (cons y xs)))

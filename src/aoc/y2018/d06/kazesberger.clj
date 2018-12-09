@@ -3,23 +3,39 @@
             [clojure.set :refer :all])
   (:import [java.util Calendar]))
 
-(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
-;(def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
+;(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
+(def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
 
 (defn abs [n] (max n (- n)))
-(defn abs-sum [[x y :as coord]]
-  (apply + (map abs coord)))
-;(map #(distance (first pinput) %) pinput)
-;
+
+(defn abs-diff [x y] (abs (- x y)))
+
+;(defn abs-sum [[x y :as coord]]
+;  (apply + (map abs coord)))
+
+; TODO wrong -> distance from [1 1] to [0 3] should be same as [2 3]
+(defn distance [[x1 y1] [x2 y2]]
+  (+ (abs-diff x1 x2) (abs-diff y1 y2)))
+
+(distance [1 1] [2 3])
+
+(defn closest2locs [[:as coord]]
+  (let [distances (group-by val (zipmap pinput (map #(distance coord %) pinput)))
+        nearest-locs (get distances (apply min (keys distances)))]))
+
+(closest2locs [0 4])
+
+(distance [4 4] [5 5])
+
 ;(for [loc pinput]
 ;  (map #(distance loc %) pinput))
 
-   ;iterate: get-points-with-increasing-range (draw increasingly large "circles")
-   ;         subtract intersections
-   ;         drop out points that do not increase in field size
-   ;
-   ;until-ideas:  ("board" full)
-   ;              (iteration only))
+  ;iterate: get-points-with-increasing-range (draw increasingly large "circles")
+  ;         subtract intersections
+  ;         drop out points that do not increase in field size
+  ;
+  ;until-ideas:  ("board" full)
+  ;              (iteration only))
 
 ;game := map of maps: {
 ;  :locs [ {:as loc :keys [[:as coord] #{:as fieldset}]}* ]
@@ -211,12 +227,3 @@
     (zero? (count (apply clojure.set/intersection board (map :field))))
 
     (map #(apply + %) pinput)))
-
-
-    ;(defn abs-diff [x y] (abs (- x y)))
-    ;
-    ;(defn distance [[x y] [a b]]
-    ;  (+ (abs-diff x a) (abs-diff y b)))))
-
-(comment
-  (distance [1 1] [2 4]))

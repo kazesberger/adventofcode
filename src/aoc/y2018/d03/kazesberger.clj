@@ -23,16 +23,15 @@
                                                         [a b]))
                                                     puzzle-input)))))
 
-
-(let [claims (take 10 (map
-                        (fn [{:keys [id x y width height]}]
-
-                          {id (set (for [a (range (inc x) (+ (inc x) width))
-                                         b (range (inc y) (+ (inc y) height))]
-                                     [a b]))})
-                        puzzle-input))]
-  ; into clean-claims #(remove overlaps) claims
-  (reduce))
+;(let [claims (take 10 (map
+;                        (fn [{:keys [id x y width height]}]
+;
+;                          {id (set (for [a (range (inc x) (+ (inc x) width))
+;                                         b (range (inc y) (+ (inc y) height))]
+;                                     [a b]))})
+;                        puzzle-input))]
+;  ; into clean-claims #(remove overlaps) claims
+;  (reduce))
 
 (comment
   (def claims-processed {:valid-claims #{1 2 3}
