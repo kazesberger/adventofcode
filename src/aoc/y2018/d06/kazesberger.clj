@@ -3,14 +3,8 @@
             [clojure.set :refer :all])
   (:import [java.util Calendar]))
 
-;(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
-(def pinput
-  '([1 1]
-    [1 6]
-    [8 3]
-    [3 4]
-    [5 5]
-    [8 9]))
+(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
+;(def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
 
 (defn abs [n] (max n (- n)))
 (defn abs-sum [[x y :as coord]]
@@ -130,8 +124,10 @@
            ;[coord intersection-candidates])) tng)
 
 
-(defn ng-fn [generation]
-    (into {} (map (juxt identity #(field-move % generation)) pinput)))
+(def ng-fn
+  (memoize
+    (fn [generation]
+      (into {} (map (juxt identity #(field-move % generation)) pinput)))))
 
 (defn get-intersections [gen]
   (apply clojure.set/union
@@ -149,6 +145,22 @@
       fields-with-intersects
       (into fields-with-intersects (gen-board (dec gen))))))
 
+(comment
+  (select-keys
+    (gen-board 11)
+    '([178 287]))
+  (count (let [b-dims (board-dimensions pinput)]
+           (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))
+                 y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
+             [x y])))
+  (count
+    (select-keys
+      (gen-board 30)
+      (let [b-dims (board-dimensions pinput)]
+        (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))
+              y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
+          [x y])))))
+
 (defn transpose [m]
   (apply mapv vector m))
 
@@ -159,18 +171,16 @@
         (for [y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
           ;[x y]))))
           (if (get board [x y]) (get board [x y]) "___"))))))
-(render-board (gen-board 5))
-
-
 
 (comment
-  (gen-board 2)
-  (into {:a 1 :b 2 :c 4} {:a 3 :b 3})
-  (get-intersections 4)
-  (map (get (ng-fn 2) [1 1]))
-  (get-intersections 0)
-  loc-relations
-  (ng-fn 2))
+  (render-board (gen-board 5)
+    (gen-board 2)
+    (into {:a 1 :b 2 :c 4} {:a 3 :b 3})
+    (get-intersections 4)
+    (map (get (ng-fn 2) [1 1]))
+    (get-intersections 0)
+    loc-relations
+    (ng-fn 2)))
 
 (defn moves [pinput generation]
   (let [tng (zipmap pinput (map #(field-move % generation) pinput))]))
