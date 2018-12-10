@@ -1,7 +1,6 @@
 (ns aoc.y2018.d06.kazesberger
   (:require [clojure.string :as str]
-            [clojure.set :refer :all])
-  (:import [java.util Calendar]))
+            [clojure.set :refer :all]))
 
 ;(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
 (def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
@@ -16,41 +15,71 @@
 (defn distance [[x1 y1] [x2 y2]]
   (+ (abs-diff x1 x2) (abs-diff y1 y2)))
 
-(defn closest2locs [[:as coord]]
-  (let [distances (group-by val (zipmap pinput (map #(distance coord %) pinput)))
-        nearest-locs (get distances (apply min (keys distances)))]
-    nearest-locs))
+;(defn closest2locs [[:as coord]])
+  ;(let [distances (group-by val (zipmap pinput (map #(distance coord %) pinput)))
+  ;      nearest-locs (get distances (apply min (keys distances)))]
+  ;  nearest-locs))
 
-(closest2locs [0 4])
+;(closest2locs [0 4])
 
-(defn board-dimensions [pinput]
+(def board-dimensions
   (let [
-        xmin (apply min(map first pinput))
-        xmax (apply max(map first pinput))
-        ymin (apply min(map second pinput))
-        ymax (apply max(map second pinput))]
-    [[xmin ymin] [xmax ymax]]))
-
+        xmin (dec (apply min(map first pinput)))
+        xmax (inc (apply max(map first pinput)))
+        ymin (dec (apply min(map second pinput)))
+        ymax (inc (apply max(map second pinput)))
+        board (for [y (range ymin ymax)
+                    x (range xmin xmax)]
+                [x y])]
+    {:topleft [xmin ymin]
+     :botright [xmax ymax]
+     :width (- xmax xmin)
+     :board board}))
 
 (board-dimensions pinput)
+;(def width (board-dimensions pinput))
 
-; board is a map of points [x y] to field-associations.
+(defn closest2loc [[:as coord]]
+  (let [distances-to-loc (sort-by (partial distance coord) pinput)]
+    (if (= (distance coord (first distances-to-loc))
+           (distance coord (second distances-to-loc)))
+        "***"
+        (first distances-to-loc))))
 
-(defn render-board [board]
-  (transpose
-    (let [b-dims (board-dimensions pinput)]
-      (for [x (range (get-in b-dims [0 0]) (inc (get-in b-dims [1 0])))]
-        (for [y (range (get-in b-dims [0 1]) (inc (get-in b-dims [1 1])))]
-          [x y])))))
-          ;(if (get board [x y]) (get board [x y]) "___"))))))
+(closest2loc [1 4])
+
+(defn render-board [width board]
+  (partition width board))
+
+(render-board (:width board-dimensions)
+              (map closest2loc (:board board-dimensions)))
+
+(defn edge-points [width rated-board]
+  (let [rows (partition width rated-board)]
+    (into #{} (concat (first rows) (last rows)
+                      (map first rows) (map last rows)))))
+
+(edge-points (:width board-dimensions) (map closest2loc (:board board-dimensions)))
+
+
+(defn dang-i-finally-solved-part1 []
+  (let [rated-board (map closest2loc (:board board-dimensions))
+        infinite-points (edge-points (:width board-dimensions) (map closest2loc (:board board-dimensions)))]
+    (->> rated-board
+         (remove infinite-points)
+         (frequencies)
+         (vals)
+         (apply max))))
+
+(dang-i-finally-solved-part1)
 
 (comment
   (defn add-borders)
   (defn field-complete? [loc])
 ; in case brute board calculations are too expensive i'd need some math/logic here:
-  (defn infinite? [loc] false))
+  (defn infinite? [loc] false)
 
-(render-board "")
+  (render-board ""))
 ;(render-board)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; mostly trash below here ;;;;;;;;;;;;;;;;;;;;;;;;;
