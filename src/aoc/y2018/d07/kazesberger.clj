@@ -40,6 +40,15 @@
 (defn part-1 []
   (assemble [] parts))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; reqs = a needs b
+; aka    step -> cond
+
+; 1) abstract step-time as req. to subsequent steps (if no subsequent steps add artificial 'done'-step)
+; 2) abstract step-time as mapping to an worker-progress step->started-ts map of exact size (worker slots)
+
+(defn assemble-parallel [done steps-left reqs ])
+
 (defn assemble-parallel [done steps-left reqs time-req time]
   (if (zero? (count steps-left))
     (str/join done)
