@@ -2,8 +2,8 @@
   (:require [clojure.string :as str]
             [clojure.set :refer :all]))
 
-;(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
-(def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
+(def pinput (map (comp vec (partial map read-string)) (map #(str/split % #"\,\s") (str/split-lines (slurp "resources/puzzle-input/y18d06")))))
+;(def pinput '([1 1] [1 6] [8 3] [3 4] [5 5] [8 9]))
 
 (defn abs [n] (max n (- n)))
 
@@ -72,6 +72,15 @@
          (apply max))))
 
 (dang-i-finally-solved-part1)
+
+(defn sum-of-dists [[:as coord]]
+  (apply + (map (partial distance coord) pinput)))
+
+(count (reduce #(if (> 10000 (sum-of-dists %2))
+                  (conj %1 %2)
+                  %1)
+               []
+               (:board board-dimensions)))
 
 (comment
   (defn add-borders)
