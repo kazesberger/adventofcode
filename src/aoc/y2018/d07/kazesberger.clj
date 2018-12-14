@@ -108,7 +108,7 @@
                                           workers
                                           steps-left]}
                          workercount]
-  (println secs-passed work)
+  ;(println secs-passed work)
   (let [done (into done (map #(get-in % [1 0])) (work-done secs-passed  workers))]
     (if (or (every? (comp zero? count) [steps-left workers])
             (> secs-passed 200000))
