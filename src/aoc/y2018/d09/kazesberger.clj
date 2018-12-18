@@ -30,10 +30,13 @@
            :keys [score circle current]}
           turn]
   (let [[a b] (split-at (get-split-index current (count circle)) circle)
-        circle (concat a [(second turn)] b)]))
-
+        circle (concat a [(second turn)] b)]
+    {:circle circle
+     :score score
+     :current (count a)}))
 
 (comment
+  (reduce rf {:score {} :circle [0] :current 0} turns)
   (let [[a b :as foo] (#(split-at (get-split-index %1 (count %2)) %2) 1 [0 4 2 1 3])]
     (concat a [5] b)))
 
