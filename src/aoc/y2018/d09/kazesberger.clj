@@ -66,13 +66,28 @@
 (take-while #(< % highest-marble) (iterate #(+ % 23) 23))
 
 (defn get-insertion-index [[last-insert-index marblenumber]]
-  (if (zero? (mod marblenumber 23))
-    [666 23]
-    (let [index (+ 2 last-insert-index)
-          roll-over-index (mod index (inc marblenumber))]
-      (if (zero? roll-over-index)
-        [(inc marblenumber) (inc marblenumber)]
-        [roll-over-index (inc marblenumber)]))))
+  (let [circlesize (- (inc marblenumber) (quot (inc marblenumber) 23))]
+    (println circlesize marblenumber)
+    (if (zero? (mod (inc marblenumber) 23))
+      [(- last-insert-index 7) (inc marblenumber)]
+      (let [index (+ 2 last-insert-index)
+            roll-over-index (mod index circlesize)]
+        (if (zero? roll-over-index)
+          [circlesize (inc marblenumber)]
+          [roll-over-index (inc marblenumber)])))))
 
-(get-insertion-index [1 1])
-(take 25 (iterate get-insertion-index [1 1]))
+(comment
+  (get-insertion-index [1 1])
+  (take 23 (iterate get-insertion-index [1 1])))
+
+(defn get-from-insert-seq [[find-index offset :as a] [insertion-index marble :as b]]
+  (println a b)
+  (println (neg? find-index) (= insertion-index (+ offset find-index)) (< insertion-index (+ offset find-index)))
+  (cond
+    ;(zero? (mod offset 23)) [insertion-index 0]
+    (neg? find-index) [insertion-index 0]
+    (= find-index (+ offset insertion-index)) (reduced marble)
+    (> find-index (+ offset insertion-index)) [find-index (inc offset)]
+    :else [find-index offset]))
+
+(reduce get-from-insert-seq [-1 0] (reverse (take 23 (iterate get-insertion-index [1 1]))))
