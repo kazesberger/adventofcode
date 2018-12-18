@@ -67,9 +67,9 @@
 
 (defn get-insertion-index [[last-insert-index marblenumber]]
   (let [circlesize (- (inc marblenumber) (quot (inc marblenumber) 23))]
-    (println circlesize marblenumber)
+    ;(println circlesize marblenumber)
     (if (zero? (mod (inc marblenumber) 23))
-      [(- last-insert-index 7) (inc marblenumber)]
+      [(mod (- last-insert-index 7) circlesize) (inc marblenumber)]
       (let [index (+ 2 last-insert-index)
             roll-over-index (mod index circlesize)]
         (if (zero? roll-over-index)
@@ -81,8 +81,8 @@
   (take 23 (iterate get-insertion-index [1 1])))
 
 (defn get-from-insert-seq [[find-index offset :as a] [insertion-index marble :as b]]
-  (println a b)
-  (println (neg? find-index) (= insertion-index (+ offset find-index)) (< insertion-index (+ offset find-index)))
+  ;(println a b)
+  ;(println (neg? find-index) (= insertion-index (+ offset find-index)) (< insertion-index (+ offset find-index)))
   (cond
     ;(zero? (mod offset 23)) [insertion-index 0]
     (neg? find-index) [insertion-index 0]
@@ -90,4 +90,31 @@
     (> find-index (+ offset insertion-index)) [find-index (inc offset)]
     :else [find-index offset]))
 
-(reduce get-from-insert-seq [-1 0] (reverse (take 23 (iterate get-insertion-index [1 1]))))
+(comment
+  (reduce get-from-insert-seq [-1 0] (reverse (take 23 (iterate get-insertion-index [1 1]))))
+  (take 621 (iterate get-insertion-index [1 1])))
+
+(defn solve-fast [n-players highest-marble]
+  (let [insertions (iterate get-insertion-index [1 1])
+        anomalies (take-while #(< % highest-marble) (iterate #(+ % 23) 23))
+        anomaly-turns (map #(vector % (mod % n-players)) anomalies)
+        get-score #(+ % (reduce get-from-insert-seq [-1 0] (reverse (take % insertions))))
+        playerscore (group-by second (map #(update % 0 get-score) anomaly-turns))
+        sum-up (fn [scores] (apply + (map first scores)))]
+    (apply max (map sum-up (map second playerscore)))))
+
+(comment
+  (apply + (map first [[322 0] [533 0] [963 0] [1283 0] [1601 0] [1919 0] [2253 0]]))
+  (update [[1 1] [2 2]] 0 inc)
+  (let [n-players 9
+        highest-marble 50
+        lame-turns (map vector (cycle (range 1 (inc n-players))) (range 1 (inc highest-marble)))
+        ;turns (map #(vector % (mod % n-players) (range 1 (inc highest-marble))))
+        anomalies (take-while #(< % highest-marble) (iterate #(+ % 23) 23))
+        anomaly-turns (map #(vector % (mod % n-players)) anomalies)]))
+    ;[lame-turns anomaly-turns]))
+    ;(= [lame-turns turns])))
+    ;[ (map second anomaly-turns) anomalies]))
+
+
+(solve-fast 10 1618)
