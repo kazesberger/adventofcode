@@ -1,21 +1,7 @@
 (ns aoc.y2018.d09.kazesberger)
 
-(def n-players 10)
-(def highest-marble 16)
-;(def n-marbles 1619)
-
-
-(comment
-  (range 1 highest-marble)
-  (iterate take-turn {:score (zipmap (range 1 (inc n-players)) (repeat 0))
-                      :circle [0]
-                      :players-turn 1}
-
-    (take 15 (cycle (range 1 (inc n-players))))
-    (range 1 (inc highest-marble))))
-
 ; reduce over turns
-(def turns
+(defn turns [n-players highest-marble]
   (map vector (cycle (range 1 (inc n-players))) (range 1 (inc highest-marble))))
 
 
@@ -29,14 +15,32 @@
 (defn rf [{:as game
            :keys [score circle current]}
           turn]
-  (let [[a b] (split-at (get-split-index current (count circle)) circle)
-        circle (concat a [(second turn)] b)]
-    {:circle circle
-     :score score
-     :current (count a)}))
+  (if (zero? (mod (second turn) 23))
+    (let [remove-index (mod (- current 7) (count circle))
+          ;foo (println circle remove-index)
+          removed-marble (nth circle remove-index)
+          ;foo (println removed-marble)
+          score-2-add (+ (second turn) removed-marble)]
+      {:circle (remove #{removed-marble} circle)
+       :score (update score (first turn) + score-2-add)
+       :current remove-index})
+    (let [[a b] (split-at (get-split-index current (count circle)) circle)
+          circle (concat a [(second turn)] b)]
+      {:circle circle
+       :score score
+       :current (count a)})))
+
+(defn part-1 [n-players highest-marble]
+  (apply max (vals (:score (reduce rf {:score (zipmap (range 1 (inc n-players))
+                                                      (repeat 0))
+                                       :circle [0]
+                                       :current 0} (turns n-players highest-marble))))))
+
+;(part-1 411 71170)
+;(part-1 10 1618)
 
 (comment
-  (reduce rf {:score {} :circle [0] :current 0} turns)
+  (reduce rf {:score (zipmap (range 1 11) (repeat 0)) :circle [0] :current 0} (turns 10 1618))
   (let [[a b :as foo] (#(split-at (get-split-index %1 (count %2)) %2) 1 [0 4 2 1 3])]
     (concat a [5] b)))
 
@@ -56,3 +60,19 @@
   (#(split-at (get-split-index %1 (count %2)) %2) 3 [0 2 1 3]) ;ok
   (#(split-at (get-split-index %1 (count %2)) %2) 1 [0 4 2 1 3])) ;ok
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def highest-marble 500)
+
+(take-while #(< % highest-marble) (iterate #(+ % 23) 23))
+
+(defn get-insertion-index [[last-insert-index marblenumber]]
+  (if (zero? (mod marblenumber 23))
+    [666 23]
+    (let [index (+ 2 last-insert-index)
+          roll-over-index (mod index (inc marblenumber))]
+      (if (zero? roll-over-index)
+        [(inc marblenumber) (inc marblenumber)]
+        [roll-over-index (inc marblenumber)]))))
+
+(get-insertion-index [1 1])
+(take 25 (iterate get-insertion-index [1 1]))
