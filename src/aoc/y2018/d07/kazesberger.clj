@@ -35,7 +35,7 @@
     (let [unmet-requirements (unmet-requirements done requirements)
           steps-left (remove (set done) parts)
           available-steps (sort (remove (set (keys unmet-requirements)) steps-left))]
-      (println done parts available-steps)
+      ;(println done parts available-steps)
       (when (seq available-steps) ; terminal-cond on being stuck
         (recur (conj done (first available-steps)) (disj parts (first available-steps)))))))
       ;[(conj done (first available-steps)) (disj parts (first available-steps))])))
