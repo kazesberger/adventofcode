@@ -152,6 +152,11 @@
     ;(map #(update % 0 get-score) anomaly-turns)))
 
 (comment
+  (rsubseq)
+  (rseq)
+  (subse)
+  (repli)
+  (transient)
   (reduce get-from-insert-seq [-1 0])
   (map #(vector % (mod % 10)) (range 1 12))
   (apply + (map first [[322 0] [533 0] [963 0] [1283 0] [1601 0] [1919 0] [2253 0]]))
